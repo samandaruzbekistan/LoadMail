@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "LoadConnect",
+  "version": "1.0",
+  "description": "Load maʼlumotlarini Laravel API ga yuboradi",
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "webRequest",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://one.dat.com/*",
+    "https://markaz.ideal-study.uz/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://one.dat.com/*"],
+      "css": [
+        "leaflet/leaflet.css",
+        "leaflet/leaflet-routing-machine.css"
+      ],
+      "js": [
+        "leaflet/leaflet.js",
+        "leaflet/leaflet-routing-machine.min.js",
+        "content.js"
+      ]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "leaflet/images/marker-icon.png",
+        "leaflet/images/marker-shadow.png",
+        "leaflet/images/marker-icon-2x.png"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
