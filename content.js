@@ -233,9 +233,24 @@ const mapInstances = new Set();
 
 function cleanCityName(raw) {
     if (!raw) return '';
+    
     // Remove parentheses and numbers, trim whitespace
-    // Also handle cases like "Redmond, OR (143)" -> "Redmond, OR"
-    return raw.replace(/\s*\([^)]*\)/g, '').trim();
+    // Handle cases like "Pasco, WA (212)" -> "Pasco, WA"
+    // Also handle other common patterns
+    let cleaned = raw
+        .replace(/\s*\([^)]*\)/g, '') // Remove parentheses and content inside
+        .replace(/\s*\[[^\]]*\]/g, '') // Remove brackets and content inside
+        .replace(/\s*\{[^}]*\}/g, '') // Remove braces and content inside
+        .replace(/\s*\d+$/g, '') // Remove trailing numbers
+        .replace(/\s*#\d+/g, '') // Remove hash numbers
+        .replace(/\s*-\s*\d+/g, '') // Remove dash numbers
+        .trim();
+    
+    // Additional cleaning for common patterns
+    cleaned = cleaned.replace(/\s+/g, ' '); // Replace multiple spaces with single space
+    
+    console.log(`🧹 Cleaned city name: "${raw}" -> "${cleaned}"`);
+    return cleaned;
 }
 
 
