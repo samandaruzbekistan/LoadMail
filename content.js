@@ -10,6 +10,14 @@ function getEmail(container) {
     return emailEl ? emailEl.textContent.trim() : '';
 }
 
+// Svg icons
+const icons = {
+    "email": `<svg width="16px" height="16px" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M36 15H44V28V41H4V28V15H12" stroke="#1C274C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 19V5" stroke="#1C274C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 11L24 5L18 11" stroke="#1C274C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15L24 30L44 15" stroke="#1C274C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    "map": `<svg width="16px" height="16px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22Z" stroke="#1C274C" stroke-width="1.5"/><path d="M13.4227 17.3618L16.9348 8.19598C17.2164 7.46107 16.5389 6.78361 15.804 7.06521L6.63824 10.5773C5.80779 10.8955 5.78079 12.06 6.5981 12.3083L10.0751 13.3648C10.3455 13.447 10.553 13.6545 10.6352 13.9249L11.6917 17.4019C11.94 18.2192 13.1045 18.1922 13.4227 17.3618Z" stroke="#1C274C" stroke-width="1.5"/></svg>`,
+    "copy": `<svg width="16px" height="16px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_429_11155)"><path d="M16 3H4V16" stroke="#1C274C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 7H20V19C20 20.1046 19.1046 21 18 21H10C8.89543 21 8 20.1046 8 19V7Z" stroke="#1C274C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="clip0_429_11155"><rect width="24" height="24" fill="white"/></clipPath></defs></svg>`,
+    'sent': `<svg width="16px" height="16px" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M44 24V9H24H4V24V39H24" stroke="#1bb300ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M31 36L36 40L44 30" stroke="#1bb300ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9L24 24L44 9" stroke="#1bb300ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+};
+
 function createSendButton(container) {
     const wrapper = document.createElement('div');
     wrapper.className = 'email-button-wrapper';
@@ -22,42 +30,57 @@ function createSendButton(container) {
 
     // ✉️ Send Email
     const sendBtn = document.createElement('button');
-    sendBtn.innerText = '✉️ Send Email';
+    sendBtn.innerHTML = icons.email;
     sendBtn.className = 'email-send-button';
     sendBtn.style.display = emailExists ? 'inline-block' : 'none';
     Object.assign(sendBtn.style, {
-        padding: '6px 12px',
-        backgroundColor: '#007bff',
+        padding: '4px 8px',
+        backgroundColor: 'transparent',
         color: '#fff',
         border: 'none',
         borderRadius: '4px',
         cursor: 'pointer',
-        position: 'relative'
+        position: 'relative',
+        width: '32px',
+        height: '32px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
     });
 
     // 📍 Open Map
     const mapBtn = document.createElement('button');
-    mapBtn.innerText = '📍 Open Map';
+    mapBtn.innerHTML = icons.map;
     Object.assign(mapBtn.style, {
-        padding: '6px 12px',
-        backgroundColor: '#28a745',
+        padding: '4px 8px',
+        backgroundColor: 'transparent',
         color: '#fff',
         border: 'none',
         borderRadius: '4px',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        width: '32px',
+        height: '32px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
     });
 
     // 📋 Copy Email
     const copyBtn = document.createElement('button');
-    copyBtn.innerText = '📋 Copy Email';
+    copyBtn.innerHTML = icons.copy;
     copyBtn.style.display = emailExists ? 'inline-block' : 'none';
     Object.assign(copyBtn.style, {
-        padding: '6px 12px',
-        backgroundColor: '#6c757d',
+        padding: '4px 8px',
+        backgroundColor: 'transparent',
         color: '#fff',
         border: 'none',
         borderRadius: '4px',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        width: '32px',
+        height: '32px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
     });
 
     // Dropdown
@@ -118,11 +141,11 @@ function createSendButton(container) {
                     if (response && response.success) {
                         showToast(response.message, 'success');
                         // Change button text to ✅ and disable after successful email
-                        sendBtn.innerText = '✅ Sent';
-                        sendBtn.style.backgroundColor = '#28a745';
+                        sendBtn.innerHTML = icons.sent;
+                        // sendBtn.style.backgroundColor = '#28a745';
                         sendBtn.disabled = true;
                         sendBtn.style.cursor = 'not-allowed';
-                        sendBtn.style.opacity = '0.7';
+                        // sendBtn.style.opacity = '0.7';
                     } else {
                         showToast(response?.message || "Xatolik!", 'error');
                     }
@@ -152,15 +175,16 @@ function createSendButton(container) {
         const rowDetailDiv = mapBtn.closest(".table-row-detail");
         if (!rowDetailDiv) return alert("❌ Yuk tafsilotlari topilmadi");
 
-        const start = document.getElementById("mat-input-2")?.value?.trim() || "Seattle, WA";
-        const middle = getTextInside(rowDetailDiv, ".route-origin .city");
-        const end = getTextInside(rowDetailDiv, ".route-destination .city");
+        const start = cleanCityName(document.getElementById("mat-input-2")?.value?.trim()) || "Seattle, WA";
+        const middle = cleanCityName(getTextInside(rowDetailDiv, ".route-origin .city"));
+        const end = cleanCityName(getTextInside(rowDetailDiv, ".route-destination .city"));
 
         const url = "https://www.google.com/maps/dir/" +
             encodeURIComponent(start) + "/" +
             encodeURIComponent(middle) + "/" +
             encodeURIComponent(end);
 
+        console.log(`🗺️ Opening Google Maps with cleaned cities: ${start} → ${middle} → ${end}`);
         window.open(url, "_blank");
     });
 
@@ -175,24 +199,21 @@ function createSendButton(container) {
             await navigator.clipboard.writeText(email);
             showToast("Email copied to clipboard!", 'success');
             
-            // Visual feedback - change button text temporarily
-            const originalText = copyBtn.innerText;
-            copyBtn.innerText = '✅ Copied';
-            copyBtn.style.backgroundColor = '#28a745';
-            
-            // Reset after 2 seconds
-            setTimeout(() => {
-                copyBtn.innerText = originalText;
-                copyBtn.style.backgroundColor = '#6c757d';
-            }, 2000);
+            // Simple visual feedback - just show success toast, no button changes
+            console.log('✅ Email copied successfully:', email);
         } catch (err) {
             console.error('Failed to copy email:', err);
             showToast("Failed to copy email", 'error');
         }
     });
 
-    wrapper.appendChild(sendBtn);
-    wrapper.appendChild(copyBtn);
+    // Only append email buttons if email exists
+    if (emailExists) {
+        wrapper.appendChild(sendBtn);
+        wrapper.appendChild(copyBtn);
+    }
+    
+    // Always append map button
     wrapper.appendChild(mapBtn);
 
     return wrapper;
@@ -521,7 +542,7 @@ function injectRateCalculatorInsteadOfMarketRates() {
         Object.assign(box.style, {
             background: '#fff',
             color: '#333',
-            padding: '20px',
+            // padding: '20px',
             borderRadius: '8px',
             width: '100%',
             boxSizing: 'border-box',
@@ -574,7 +595,6 @@ function injectRateCalculatorInsteadOfMarketRates() {
         // Main Calculator Section with Blue Border
         const calculatorSection = document.createElement('div');
         Object.assign(calculatorSection.style, {
-            border: '2px solid #0d6efd',
             borderRadius: '8px',
             padding: '15px',
             backgroundColor: '#f8f9fa'
@@ -810,7 +830,7 @@ function addMapAsFourthColumn(parentRow, pickupCity, dropoffCity, driverCity) {
         minWidth: '300px',
         padding: '15px',
         borderLeft: '1px solid #e0e0e0',
-        backgroundColor: '#f8f9fa',
+        // backgroundColor: '#f8f9fa',
         display: 'flex',
         flexDirection: 'column',
         gap: '10px'
@@ -828,7 +848,7 @@ function addMapAsFourthColumn(parentRow, pickupCity, dropoffCity, driverCity) {
         height: '400px',
         borderRadius: '8px',
         overflow: 'hidden',
-        border: '2px solid rgb(0, 0, 0)',
+        // border: '2px solid rgb(0, 0, 0)',
         backgroundColor: '#fff'
     });
     mapColumn.appendChild(mapContainer);
