@@ -1,5 +1,8 @@
 console.log("✅ content.js yuklandi");
 
+// Clean up expired load entries on script load
+cleanupExpiredLoads();
+
 function getTextInside(container, selector) {
     const el = container.querySelector(selector);
     return el ? el.textContent.trim() : '';
@@ -8,6 +11,69 @@ function getTextInside(container, selector) {
 function getEmail(container) {
     const emailEl = container.querySelector('a[href^="mailto:"]');
     return emailEl ? emailEl.textContent.trim() : '';
+}
+
+
+function generateLoadId(pickup, dropoff, email, broker) {
+    // Create a unique ID by combining pickup, dropoff, email, and broker
+    const combined = `${pickup}_${dropoff}_${email}_${broker}`;
+    // Create a hash-like string for better storage
+    return btoa(combined).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+}
+
+// localStorage management functions
+function saveSentLoad(loadId) {
+    const sentLoads = getSentLoads();
+    sentLoads[loadId] = {
+        timestamp: Date.now(),
+        expiresAt: Date.now() + (24 * 60 * 60 * 1000) // 24 hours from now
+    };
+    localStorage.setItem('sentLoads', JSON.stringify(sentLoads));
+    console.log(`💾 Saved load ID to localStorage: ${loadId}`);
+}
+
+function getSentLoads() {
+    try {
+        const stored = localStorage.getItem('sentLoads');
+        return stored ? JSON.parse(stored) : {};
+    } catch (error) {
+        console.error('Error reading sent loads from localStorage:', error);
+        return {};
+    }
+}
+
+function isLoadAlreadySent(loadId) {
+    const sentLoads = getSentLoads();
+    const loadData = sentLoads[loadId];
+    
+    if (!loadData) return false;
+    
+    // Check if the load has expired (24 hours)
+    if (Date.now() > loadData.expiresAt) {
+        // Remove expired entry
+        delete sentLoads[loadId];
+        localStorage.setItem('sentLoads', JSON.stringify(sentLoads));
+        return false;
+    }
+    
+    return true;
+}
+
+function cleanupExpiredLoads() {
+    const sentLoads = getSentLoads();
+    let hasChanges = false;
+    
+    Object.keys(sentLoads).forEach(loadId => {
+        if (Date.now() > sentLoads[loadId].expiresAt) {
+            delete sentLoads[loadId];
+            hasChanges = true;
+        }
+    });
+    
+    if (hasChanges) {
+        localStorage.setItem('sentLoads', JSON.stringify(sentLoads));
+        console.log('🧹 Cleaned up expired load entries');
+    }
 }
 
 // Svg icons
@@ -27,10 +93,28 @@ function createSendButton(container) {
     wrapper.style.marginTop = '6px';
 
     const emailExists = getEmail(container) !== "";
+    
+    // Get load details for ID generation
+    const rowDetailDiv = container.closest(".table-row-detail");
+    let loadId = null;
+    let isAlreadySent = false;
+    
+    if (rowDetailDiv && emailExists) {
+        const pickup = getTextInside(rowDetailDiv, ".route-origin .city");
+        const dropoff = getTextInside(rowDetailDiv, ".route-destination .city");
+        const email = getEmail(container);
+        const broker = getTextInside(rowDetailDiv, ".company-details");
+        
+        loadId = generateLoadId(pickup, dropoff, email, broker);
+        isAlreadySent = isLoadAlreadySent(loadId);
+        console.log(`🔍 Load ID: ${loadId}, Already sent: ${isAlreadySent}`, {
+            pickup, dropoff, email, broker
+        });
+    }
 
     // ✉️ Send Email
     const sendBtn = document.createElement('button');
-    sendBtn.innerHTML = icons.email;
+    sendBtn.innerHTML = isAlreadySent ? icons.sent : icons.email;
     sendBtn.className = 'email-send-button';
     sendBtn.style.display = emailExists ? 'inline-block' : 'none';
     Object.assign(sendBtn.style, {
@@ -39,14 +123,20 @@ function createSendButton(container) {
         color: '#fff',
         border: 'none',
         borderRadius: '4px',
-        cursor: 'pointer',
+        cursor: isAlreadySent ? 'not-allowed' : 'pointer',
         position: 'relative',
         width: '32px',
         height: '32px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        opacity: isAlreadySent ? '0.7' : '1'
     });
+    
+    // Disable button if already sent
+    if (isAlreadySent) {
+        sendBtn.disabled = true;
+    }
 
     // 📍 Open Map
     const mapBtn = document.createElement('button');
@@ -142,10 +232,15 @@ function createSendButton(container) {
                         showToast(response.message, 'success');
                         // Change button text to ✅ and disable after successful email
                         sendBtn.innerHTML = icons.sent;
-                        // sendBtn.style.backgroundColor = '#28a745';
                         sendBtn.disabled = true;
                         sendBtn.style.cursor = 'not-allowed';
-                        // sendBtn.style.opacity = '0.7';
+                        sendBtn.style.opacity = '0.7';
+                        
+                        // Save load ID to localStorage to track sent emails
+                        if (loadId) {
+                            saveSentLoad(loadId);
+                            console.log(`✅ Email sent and load ID saved: ${loadId}`);
+                        }
                     } else {
                         showToast(response?.message || "Xatolik!", 'error');
                     }
@@ -871,6 +966,10 @@ function addMapAsFourthColumn(parentRow, pickupCity, dropoffCity, driverCity) {
 setInterval(() => {
     injectButtonsForEmailAndMap();
     injectRateCalculatorInsteadOfMarketRates();
+    // Clean up expired load entries every 5 minutes
+    if (Date.now() % 300000 < 1000) { // Every 5 minutes
+        cleanupExpiredLoads();
+    }
 }, 1000);
 
 function showToast(message, type = 'success') {
